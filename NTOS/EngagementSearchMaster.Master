@@ -1,0 +1,971 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="EngagementSearchMaster.master.cs" Inherits="NTOS.EngagementSearchMaster" %>
+
+
+
+<%@ Register Src="~/Search.ascx" TagPrefix="ucSearch" TagName="Search" %>
+<%@ Register Src="~/Menu.ascx" TagPrefix="ucMenue" TagName="Menu" %>
+<!DOCTYPE html>
+
+<meta http-equiv="Page-Enter" content="blendTrans(Duration=0.2)">
+<meta http-equiv="Page-Exit" content="blendTrans(Duration=0.2)">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head1" runat="server">
+
+
+
+    <script type="text/javascript">
+
+        function MouseHover() {
+
+            $find("modpop").show();
+            //  $("#Panel1").css("Class", "popup");
+
+        }
+
+
+        function printpreview() {
+            var nVer = navigator.appVersion;
+            var nAgt = navigator.userAgent;
+            var browserName = navigator.appName;
+            var nameOffset, verOffset, ix;
+            verOffset = nAgt.indexOf("MSIE");
+            alert(browserName);
+            if ((verOffset = nAgt.indexOf("MSIE")) != -1) {
+                var OLECMDID = 7;
+                /* OLECMDID values:
+                * 6 - print
+                * 7 - print preview
+                * 1 - open window
+                * 4 - Save As
+                */
+                var PROMPT = 1; // 2 DONTPROMPTUSER
+                var WebBrowser = '<OBJECT ID="WebBrowser1" WIDTH=0 HEIGHT=0 CLASSID="CLSID:8856F961-340A-11D0-A96B-00C04FD705A2"></OBJECT>';
+                document.body.insertAdjacentHTML('beforeEnd', WebBrowser);
+                WebBrowser1.ExecWB(OLECMDID, PROMPT);
+                WebBrowser1.outerHTML = "";
+            }
+            else {
+
+                window.print();
+            }
+            //debugger;
+        }
+    </script>
+
+
+
+    <script type="text/javascript">
+        var btn1txt = "Yes", btn2txt = "No";
+        function saveconfirm() {
+            //debugger;
+            $(function () {
+                $("#dialog-confirm").dialog({
+                    resizable: false, width: 280, height: 150, modal: true, hide: 'fade', show: 'fade',
+                    buttons: [{
+                        text: btn1txt,
+                        click: function () {
+                            $('#dialog-confirm').dialog("close");
+                            $('#btnsave').click();
+                        },
+                    }, {
+                        text: btn2txt,
+                        click: function () {
+                            $('#dialog-confirm').dialog("close");
+                        },
+                    }]
+
+                });
+            });
+            return false;
+        }
+
+        function deleteconfirm() {
+            $(function () {
+                $("#dialog-delconfirm").dialog({
+                    resizable: false, width: 280, height: 155, modal: true, hide: 'fade', show: 'fade', buttons:
+                        {
+                            "Yes": function () {
+                                $('#dialog-delconfirm').dialog("close");
+                                $('#btndelete').click();
+                            },
+                            "No": function () {
+                                $('#dialog-delconfirm').dialog("close");
+                            }
+                        }
+                });
+            });
+            return false;
+        }
+        function undeleteconfirm() {
+            $(function () {
+                $("#dialog-undelconfirm").dialog({
+                    resizable: false, width: 280, height: 160, modal: true, hide: 'fade', show: 'fade', buttons:
+                        {
+                            "Yes": function () {
+                                $('#dialog-undelconfirm').dialog("close");
+                                $('#btnundelete').click();
+                            },
+                            "No": function () {
+                                $('#dialog-undelconfirm').dialog("close");
+                            }
+                        }
+                });
+            });
+            return false;
+        }
+        function clearconfirm() {
+            //debugger;
+            if (this.location.pathname.search("Deal") > 0) {
+                return confirm("Are you sure to delete this record?");
+            }
+            else { return true; }
+        }
+
+        function JQalertbox(msg) {
+            //debugger
+            $('#alertmsg').html(msg);
+            $(function () {
+                $("#dialog-alert").dialog({
+                    resizable: false, width: 280, height: 200, modal: true, hide: 'fade', show: 'fade',
+                    buttons: [{
+                        text: "OK",
+                        click: function () {
+                            $('#dialog-alert').dialog("close");
+                        },
+                    }]
+                });
+            });
+            return false;
+        }
+    </script>
+    <link href="~/content/Site.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/chosen.css" rel="stylesheet" />
+    <webopt:BundleReference ID="BundleReference1" runat="server" Path="~/Content/themes/base/css" />
+    <link href='http://fonts.googleapis.com/css?family=Archivo+Narrow:700' rel='stylesheet' type='text/css'>
+
+
+    <script type="text/javascript" src="~/Scripts/jquery.dropdownPlain.js"></script>
+    <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+    <meta name="viewport" content="width=device-width" />
+
+    <asp:ContentPlaceHolder ID="HeadContent" runat="server">
+    </asp:ContentPlaceHolder>
+    <script src="Scripts/datepicker/jquery-1.7.1.min.js" type="text/javascript"></script>
+    <script src="Scripts/datepicker/date.js" type="text/javascript"></script>
+    <script src="Scripts/datepicker/jquery.datePicker.js" type="text/javascript"></script>
+    <link href="Content/datepicker/datePicker.css" rel="stylesheet" />
+
+</head>
+<body>
+    <script type="text/javascript">
+        function pageLoad() {
+            $(function selectdate() {
+                $('#<%=hdfdate.ClientID%>').datePicker({
+                    startDate: '01/01/1996'
+                }).bind(
+                    'dateSelected',
+                    function (e, selectedDate, $td) {
+                        var d = new Date();
+                        d = selectedDate.localeFormat("MM/dd/yyyy");
+                        $("#<%=hdfdate.ClientID %>").val(d);
+                        $("#<%=btnclickevent.ClientID %>")[0].click();
+                    }
+                );
+            });
+        }
+
+    </script>
+    <style type="text/css">
+        a.dp-choose-date {
+            float: left;
+            height: 30px;
+            width: 30px;
+            padding: 0;
+            margin: 5px 3px 0;
+            display: block;
+            text-indent: -2000px;
+            overflow: hidden;
+            background: url('/images/calendar.png') no-repeat;
+        }
+
+            a.dp-choose-date.dp-disabled {
+                background-position: 0 -20px;
+                cursor: default;
+            }
+
+        input.dp-applied {
+            width: 140px;
+            float: left;
+        }
+    </style>
+
+    <style>
+        .modalBackground {
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            filter: alpha(opacity=60);
+            -moz-opacity: 0.6;
+            opacity: 0.6;
+        }
+    </style>
+
+    <form id="Form1" runat="server" defaultbutton="imgbtnsave">
+        <ajaxToolkit:ToolkitScriptManager ID="ToolkitScriptManager1" runat="server">
+            <Scripts>
+                <%--Framework Scripts--%>
+                <asp:ScriptReference Name="jquery" />
+                <asp:ScriptReference Name="jquery.ui.combined" />
+                <asp:ScriptReference Name="WebForms.js" Path="~/Scripts/WebForms/WebForms.js" />
+                <asp:ScriptReference Name="WebUIValidation.js" Path="~/Scripts/WebForms/WebUIValidation.js" />
+                <asp:ScriptReference Name="MenuStandards.js" Path="~/Scripts/WebForms/MenuStandards.js" />
+                <asp:ScriptReference Name="GridView.js" Path="~/Scripts/WebForms/GridView.js" />
+                <asp:ScriptReference Name="DetailsView.js" Path="~/Scripts/WebForms/DetailsView.js" />
+                <asp:ScriptReference Name="TreeView.js" Path="~/Scripts/WebForms/TreeView.js" />
+                <asp:ScriptReference Name="WebParts.js" Path="~/Scripts/WebForms/WebParts.js" />
+                <asp:ScriptReference Name="Focus.js" Path="~/Scripts/WebForms/Focus.js" />
+                <asp:ScriptReference Name="WebFormsBundle" />
+                <%--Site Scripts--%>
+            </Scripts>
+        </ajaxToolkit:ToolkitScriptManager>
+
+        <script type="text/javascript">
+            function calexit() {
+                if ($('#hdn_modify_status').val() == 1) {
+                    $(function () {
+                        $("#dialog-exit").dialog({
+                            resizable: false, width: 250, height: 150, modal: true, hide: 'fade', show: 'fade', buttons:
+                                {
+                                    "Yes": function () {
+                                        $('#dialog-exit').dialog("close");
+                                        window.close();
+                                    },
+                                    "No": function () {
+                                        $('#dialog-exit').dialog("close");
+                                    }
+                                }
+                        });
+
+                    });
+                }
+                else {
+                    window.close();
+                }
+                return false;
+            }
+
+            $("#Form1").one("change", ":input", function () {
+                var user_role = '<%= Session["userrole"].ToString() %>';
+                var role_status = (user_role == 'reader') ? 0 : 1;
+                if (role_status != 0)
+                    $('#hdn_modify_status').val("1");
+            });
+
+            //$(document).ready(function () {                
+            //    var $popup = $('.menu #nav a');                
+            //    $popup.live('click', function () {
+            //        if ($('#hdn_modify_status').val() == 1) {
+            //            if (confirm('Data not Saved! Want to Save?') == true) {
+            //                return false;
+            //                if (Page_ClientValidate()) {
+            //                    $('#btnsave').click();
+            //                    return false;
+            //                }
+            //                else { return false; }
+            //            }
+            //            else {
+            //                return true;
+            //            }
+            //        }
+            //    });
+            //});
+            var url;
+            $(document).ready(function () {
+                var $popup = $('.menu #nav a');
+                $popup.live('click', function () {
+                    url = this;
+                    if ($('#hdn_modify_status').val() == 1) {
+                        //    //$(function () {
+                        //    //    $("#dialog-redirectconfirm").dialog({
+                        //    //        resizable: false, width: 280, height: 150, modal: true, hide: 'fade', show: 'fade',
+                        //    //        buttons: [{
+                        //    //            text: "Yes",
+                        //    //            click: function () {
+                        //    //                $('#dialog-redirectconfirm').dialog("close");
+                        //    //                if (Page_ClientValidate()) {
+                        //    //                    $('#btnsave').click();
+                        //    //                    $('#hdn_modify_status').val("0");
+                        //    //                    return false;
+                        //    //                }
+                        //    //                else { return false; }
+                        //    //            },
+                        //    //        }, {
+                        //    //            text: "No",
+                        //    //            click: function () {
+                        //    //                $('#dialog-redirectconfirm').dialog("close");
+                        //    //                window.location = url.href;
+                        //    //            },
+                        //    //        }]
+
+                        //    //    });
+                        //    });
+                        return false;
+
+                    }
+                    else if ($('#hdn_modify_status').val() == 0) {
+                        return true;
+                    }
+                });
+            });
+
+            function menu_redirect(btn1) {
+                if ($('#hdn_modify_status').val() == 1) {
+                    $(function () {
+                        $("#dialog-redirectconfirm").dialog({
+                            resizable: false, width: 280, height: 150, modal: true, hide: 'fade', show: 'fade',
+                            buttons: [{
+                                text: "Yes",
+                                click: function () {
+                                    $('#dialog-redirectconfirm').dialog("close");
+                                    if (Page_ClientValidate()) {
+                                        $('#btnsave').click();
+                                        $('#hdn_modify_status').val("0");
+                                        return false;
+                                    }
+                                    else { return false; }
+                                },
+                            }, {
+                                text: "No",
+                                click: function () {
+                                    $('#dialog-redirectconfirm').dialog("close");
+                                    window.location = btn1.href;
+
+                                },
+                            }]
+
+                        });
+                    });
+                }
+                else {
+                    return true;
+                }
+                return false;
+            }
+            function confirm_redirect(btn1) {
+                $(function () {
+                    $("#dialog-redirectconfirm").dialog({
+                        resizable: false, width: 280, height: 150, modal: true, hide: 'fade', show: 'fade',
+                        buttons: [{
+                            text: "Yes",
+                            click: function () {
+                                $('#dialog-redirectconfirm').dialog("close");
+                                if (Page_ClientValidate()) {
+                                    $('#btnsave').click();
+                                    $('#hdn_modify_status').val("0");
+                                    return false;
+                                }
+                                else { return false; }
+                            },
+                        }, {
+                            text: "No",
+                            click: function () {
+                                $('#dialog-redirectconfirm').dialog("close");
+                                $('#hdn_modify_status').val(btn1);
+                                $('#btnredirect').click();
+                            },
+                        }]
+
+                    });
+                });
+            }
+            function checkstatus(btn) {
+                if ($('#hdn_modify_status').val() == 1) {
+                    confirm_redirect(btn);
+                }
+                else {
+                    return true;
+                }
+                return false;
+            }
+            function redirect() {
+
+                var title = document.title;
+                var a_tag = document.getElementById("A2");
+                a_tag.href = "Search.aspx?title=" + title;
+
+            }
+
+        </script>
+
+        <asp:HiddenField ID="hdnreqlist" runat="server" />
+
+        <div id="dialog-redirectconfirm" title="Submit Confirmation" style="display: none; overflow: hidden; text-align: center; font-size: 12px">
+            <p>
+                <%--<span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>
+                Data not Saved! Want to Save? --%>              
+            </p>
+        </div>
+        <div id="dialog-confirm" title="Submit Confirmation" style="display: none; overflow: hidden; text-align: center; font-size: 12px">
+            <p>
+                <span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>
+                Do you want to submit the data?
+               
+            </p>
+        </div>
+        <div id="dialog-delconfirm" title="Delete Confirmation" style="display: none; overflow: hidden; text-align: center; font-size: 12px">
+            <p>
+                <span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>
+                Entire Engagement will be deleted. Do you want to delete ?
+               
+            </p>
+        </div>
+        <div id="dialog-undelconfirm" title="Undelete Confirmation" style="display: none; overflow: hidden; text-align: center; font-size: 12px">
+            <p>
+                <span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>
+                Do you want to Undelete this record?               
+            </p>
+        </div>
+        <div id="dialog-exit" title="Exit Confirmation" style="display: none; overflow: hidden; text-align: center; font-size: 12px">
+            <p>
+                <span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>
+                Data not Saved! Want to Exit?
+               
+            </p>
+        </div>
+        <div id="dialog-alert" title="Information" style="display: none; overflow: hidden; text-align: center; font-size: 12px">
+            <p>
+                <span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>
+                <p id="alertmsg">Sure?</p>
+
+            </p>
+        </div>
+        <div style="display: none; float: right;">
+            <asp:Button ID="btnsave" runat="server" Text="" OnClick="btninsert_Click" />
+            <asp:Button ID="btnundelete" runat="server" Text="" OnClick="btnundelete_Click" CausesValidation="false" />
+            <asp:Button ID="btndelete" runat="server" Text="" OnClick="btndelete_Click" CausesValidation="false" />
+            <asp:Button ID="btnredirect" runat="server" OnClick="btnredirect_Click" CausesValidation="false" />
+        </div>
+        <div class="maincontainer">
+            <table class="inner-container" cellspacing="0" cellpadding="0">
+                <tr style="background-color: #E9F5FC">
+                    <td>
+                        <table border="0" cellspacing="0" cellpadding="0" style="background-color: #E9F5FC; height: 30px; width: 1860px; background-repeat: repeat-x;">
+                            <tr>
+                                <td width="30%" rowspan="2" valign="top">
+                                    <a href="../Diary.aspx" title="NETworks Tours Online System">
+                                        <img src="../images/logo_project.png" alt="NETworks Tours Online System"
+                                            border="0" style="float: left; margin: 2px 0 0 0px;" /></a>
+                                    <asp:Label ID="lbl_header" runat="server" Text="" CssClass="heading" Visible="false"></asp:Label>
+                                </td>
+                                <td width="35%" rowspan="2" align="center" valign="middle" style="color: #323a3f; font-size: 25px; font-weight: bold;"></td>
+                                <td width="35%" valign="top" align="right" style="padding: 2px 20px 0 0; font-size: 12px; color: #666666; font-weight: bold;">
+                                    <span style="font-weight: normal">
+                                        <asp:Label ID="txt_revisiondate" runat="server" Text=""></asp:Label>&nbsp;
+                                 <%:Session["username"]%>,&nbsp;
+                                <a href="../Account/Login.aspx">[Log Out]</a></span>
+                                    <!--<img src="../images/user.png" width="15" height="18" border="0" align="absbottom"
+                                    alt="User" />-->
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="35%" valign="middle" align="right" style="padding: 2px 40px 0 0; font-size: 12px; color: #666666; font-weight: bold;"></td>
+                            </tr>
+                        </table>
+
+
+
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+
+                        <ucMenue:Menu EnableViewState="true" runat="server" ID="Menu" />
+
+
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <table width="100%" class="sub-bar">
+
+                            <tr>
+                                <td class="icons">
+
+                                    <asp:ImageButton ID="imgbtndiary" runat="server" ImageUrl="~/Images/diary.png" Width="15px"
+                                        Height="15px" AlternateText="Diary" ToolTip="Diary" OnClick="imgbtndiary_Click"
+                                        CausesValidation="false" Visible="false" />
+
+                                    <asp:ImageButton ID="imgbtnsave" runat="server" ImageUrl="~/Images/save.png" Width="15px"
+                                        Height="15px" AlternateText="Save" ToolTip="Save" OnClientClick="return saveconfirm('ok','Cancel');"
+                                        CssClass="padding_left10" />
+                                    <asp:ImageButton ID="imgbtndelete" runat="server" ImageUrl="~/Images/delete.png"
+                                        Width="15px"
+                                        Height="15px" AlternateText="Delete" ToolTip="Delete" OnClientClick="return deleteconfirm();"
+                                        Visible="false" CssClass="padding_left10" />
+                                    <asp:ImageButton ID="imgbtnundelete" runat="server" ImageUrl="~/Images/undelete.png"
+                                        Width="15px"
+                                        Height="15px" AlternateText="Undelete" ToolTip="Undelete" OnClientClick="return undeleteconfirm();"
+                                        Visible="false" CssClass="padding_left10" />
+                                    <asp:ImageButton ID="imgbtnprint" runat="server" ImageUrl="~/Images/print.png" Width="15px"
+                                        Height="15px" AlternateText="Print" ToolTip="Print" OnClientClick="javascript:printpreview();" OnClick="imgbtnprint_Click"
+                                        CssClass="padding_left10" CausesValidation="false" />
+
+                                    <asp:ImageButton ID="imgbtnreset" runat="server" ImageUrl="~/Images/reset.png" Width="15px"
+                                        Height="15px" AlternateText="Reset" ToolTip="Clear Fields" OnClientClick="this.form.reset();return true;"
+                                        CssClass="padding_left10" CausesValidation="false" />
+
+                                    <asp:ImageButton ID="imgbtnexit" runat="server" ImageUrl="~/Images/exit.png" OnClientClick="return calexit();"
+                                        CssClass="padding_left10"
+                                        Width="15px" Height="15px" AlternateText="For" ToolTip="Exit" CausesValidation="false" />
+
+                                    &nbsp;&nbsp;  
+                                </td>
+                                <td class="sub-nav">
+                                    <ul>
+                                        <li id="lischedule" runat="server">
+                                            <a>
+                                                <asp:LinkButton ID="imgbtnschedule" OnClientClick="return checkstatus('schedule');"
+                                                    runat="server" ToolTip="Schedule" Text="Schedule"
+                                                    ValidationGroup="scheduletab" OnClick="imgbtnschedule_Click"></asp:LinkButton></a>
+                                        </li>
+                                        <li id="lideal" runat="server">
+                                            <asp:LinkButton ID="imgbtndeal" OnClientClick="return checkstatus('deal');" runat="server"
+                                                ToolTip="Deal" OnClick="imgbtndeal_Click" ValidationGroup="dealtab" Text="Deal"></asp:LinkButton>
+                                        </li>
+                                        <li id="liprice" runat="server">
+                                            <asp:LinkButton ID="imgbtnps" OnClientClick="return checkstatus('pricescale');"
+                                                runat="server" ToolTip="Price Scale" OnClick="imgbtnps_Click" Text="Price Scale"
+                                                ValidationGroup="pstab"></asp:LinkButton></li>
+                                        <li id="liexp" runat="server">
+                                            <a>
+                                                <asp:LinkButton ID="imgbtnex" OnClientClick="return checkstatus('expense');" runat="server"
+                                                    ToolTip="Expenses" OnClick="imgbtnex_Click" Text="Expenses" ValidationGroup="extab"></asp:LinkButton></a></li>
+                                        <li id="libox" runat="server">
+                                            <a>
+                                                <asp:LinkButton ID="imgbtnbo" OnClientClick="return checkstatus('boxoffice');" runat="server"
+                                                    ToolTip="Box Office" OnClick="imgbtnbo_Click" Text="Box Office"
+                                                    ValidationGroup="botab"></asp:LinkButton></a> </li>
+                                        <li id="lidiscount" runat="server">
+                                            <a>
+                                                <asp:LinkButton ID="imgbtnds" OnClientClick="return checkstatus('discount');" runat="server"
+                                                    ToolTip="Discounts" OnClick="imgbtnds_Click" Text="Discounts"
+                                                    ValidationGroup="dstab"></asp:LinkButton></a></li>
+                                        <li id="licover" runat="server">
+                                            <a>
+                                                <asp:LinkButton ID="imgbtncs" OnClientClick="return checkstatus('coversheet');"
+                                                    runat="server" ToolTip="Coversheet" Text="Coversheet" OnClick="imgbtncs_Click"
+                                                    ValidationGroup="cstab"></asp:LinkButton></a>
+                                        </li>
+
+
+                                    </ul>
+                                </td>
+                                <td class="small-menu">
+
+
+                                    <asp:UpdatePanel ID="upmain" runat="server">
+
+                                        <ContentTemplate>
+                                            <ul id="E">
+                                                <li runat="server" id="li_search" class="menu_right">
+
+                                                    <div class="wiz" id="navpage" runat="server" visible="false">
+                                                        <center></center>
+
+                                                        <asp:Label ID="lblRecord" runat="server" Text="Records"></asp:Label>
+                                                        <asp:Label ID="lblrecindex" runat="server" Text="1"></asp:Label>
+                                                        <asp:Label ID="lblrectot" runat="server" Text=""></asp:Label>
+                                                        <asp:Button ID="btnFirst" runat="server" Text="|<" OnClick="btnFirst_Click" />
+
+                                                        <asp:Button ID="btnPrev" runat="server" Text="<" OnClick="btnPrev_Click" />
+                                                        <asp:Button ID="btnNext" runat="server" Text=">" OnClick="btnNext_Click" />
+                                                        <asp:Button ID="btnLast" runat="server" Text=">|" OnClick="btnLast_Click" />
+                                                    </div>
+
+
+                                                    <asp:ImageButton ID="btnlist" CausesValidation="false" runat="server" Width="20px" Height="15px" OnClick="btnlist_Click" ImageUrl="~/Images/list-view.png" Visible="false" CssClass="padlist" />
+
+                                                    &nbsp;
+                                                         
+                                                  
+                                                     <li id="lisearchlist" runat="server" style="cursor: pointer!important; cursor: hand;">
+
+
+                                                         <asp:ImageButton ID="ImageButton1" CausesValidation="false" Width="20px" Height="20px" runat="server" ImageUrl="~/Images/search.png" OnClick="ImageButton1_Click" />
+                                                                                                                 <asp:DropDownList ID="drpdwnSearch" Visible="false" AutoPostBack="true" OnSelectedIndexChanged="drpdwnSearch_SelectedIndexChanged" runat="server"></asp:DropDownList>
+                                                     
+                                                     </li>
+
+                                                    <asp:ImageButton ID="btnsearch1" CausesValidation="false" Width="20px" Height="20px" runat="server" OnClick="btnSearch1_Click" ImageUrl="~/Images/search.png" Visible="false" />&nbsp;
+
+
+
+                                                    <%--                                                    <div class="dropdown_3columns align_right">
+                                                        <!-- Begin 3 columns container -->
+                                                        <ucSearch:Search ID="Search1" runat="server" />
+                                                    </div>--%>
+
+                                                    <div id="Panel1" style="display: none;" runat="server" class="popup">
+                                                        <div>
+                                                            <asp:ImageButton ImageUrl="~/Images/exit.png" runat="server" ID="btncancel" CausesValidation="false" ToolTip="Close" OnClientClick="$find('modpop').hide(); return false;" />
+                                                        </div>
+                                                        <div class="popup1">
+                                                            <!-- Begin 3 columns container -->
+                                                            <%-- <ucSearch:Search ID="ucsearch" runat="server" />--%>
+
+
+                                                            <asp:GridView ID="gvrep" runat="server" AutoGenerateColumns="true" GridLines="None" OnRowDataBound="gvrep_RowDataBound">
+                                                                <Columns>
+
+                                                                    <asp:TemplateField HeaderText="###" HeaderStyle-CssClass="gvHeadersearch">
+                                                                        <ItemTemplate>
+                                                                            <p><a class="a_link" style="text-decoration: none!important;" href="<%#Eval("Link")%>" title="Edit"><%#Eval("[Name]")%></a> </p>
+                                                                        </ItemTemplate>
+                                                                    </asp:TemplateField>
+                                                                </Columns>
+                                                            </asp:GridView>
+
+                                                        </div>
+
+                                                    </div>
+
+
+                                                    <div style="display: none">
+                                                        <asp:Button ID="btnAddNew1" runat="server" Text="New Expanse" CausesValidation="false" />
+                                                    </div>
+                                                    <ajaxToolkit:ModalPopupExtender ID="modpop" BackgroundCssClass="modalBackground"
+                                                        runat="server" TargetControlID="btnAddNew1" CancelControlID="btnCancel"
+                                                        PopupControlID="Panel1" Drag="true" PopupDragHandleControlID="PopupHeader">
+                                                    </ajaxToolkit:ModalPopupExtender>
+
+
+
+
+                                                </li>
+                                                <%--<li id="link_new" runat="server"><a style="visibility: visible;" href="EngagementSchedule.aspx" target="_self" runat="server"
+                                                    id="A1">New</a></li>--%>
+
+
+                                                <li>
+                                                    <div id="divbeast" visible="false" runat="server" class="divbeastflg">Historical</div>
+
+                                                </li>
+
+
+
+                                            </ul>
+                                        </ContentTemplate>
+                                    </asp:UpdatePanel>
+
+                                </td>
+                                <td align="left" style="width: 70px;">
+                                    <div id="Div1" visible="false" runat="server" class="divbeastflg"></div>
+
+                                </td>
+                                <%--<td valign="middle" align="right" style="padding-right: 70px">Recent Navigations :&nbsp;
+                                <asp:DropDownList ID="ddlHistory" ToolTip="Last 10 links" AutoPostBack="true" OnSelectedIndexChanged="ddlHistory_SelectedIndexChanged"
+                                    runat="server">
+                                </asp:DropDownList>
+                            </td>--%>
+                            </tr>
+                        </table>
+
+                    </td>
+
+                </tr>
+                <tr>
+                    <td>
+
+                        <table border="0" cellspacing="0" cellpadding="0" width="100%">
+                            <tr>
+
+
+                                <td width="1920px" align="left" valign="top" style="padding-right: 20px; padding-left: 20px">
+                                    <div id="engsummaryDiv" runat="server" style="padding-left: 50px; padding-top: 15px;">
+                                    </div>
+
+                                    <asp:Panel ID="pnl_engagement" runat="server" Enabled="false">
+                                        <table border="0" width="100%">
+                                           <tr>
+                                               <td>
+                                            <center>
+                                                    <asp:UpdatePanel ID="upn" runat="server">
+                                                        <ContentTemplate>
+                                                            <asp:HiddenField ID="hdn_modify_status" runat="server" Value="0" />
+                                                            <asp:Label ID="lbl_message" runat="server" Text="" Font-Bold="true"></asp:Label>
+                                                        </ContentTemplate>
+                                                    </asp:UpdatePanel>
+                                                </center>
+                                                   </td>
+                                               </tr>
+                                        </table>
+
+
+                                        <table width="1300px" cellspacing="0" cellpadding="0" id="TdSummary" runat="server">
+                                            <tr>
+                                                <td align="right" valign="bottom" width="150px">
+                                                    <label>Show</label></td>
+                                                <td width="300px" valign="bottom" class="lineright">&nbsp;
+                                                <asp:DropDownList ID="drp_show" runat="server" Width="160px" AutoPostBack="True">
+                                                </asp:DropDownList>
+                                                   </td>
+
+
+                                                <td align="right" valign="bottom" width="170px">
+                                                    <label>Presenter</label></td>
+                                                <td width="350px" valign="bottom" class="lineright">&nbsp;
+                                                    <asp:DropDownList ID="drp_presenter" onchange="highlight();" runat="server"
+                                                        Width="120px">
+                                                    </asp:DropDownList>
+                                                   
+                                                    &nbsp;<asp:DropDownList ID="drp_contact" runat="server" Width="120px"></asp:DropDownList></td>
+
+                                                <td align="right" valign="bottom" width="150px">
+                                                    <label>Status</label>
+                                                </td>
+                                                <td width="200px" valign="bottom">&nbsp;
+                                                    <asp:DropDownList ID="drp_status" runat="server" Width="160px">
+                                                </asp:DropDownList>
+                                                </td>
+
+
+
+
+                                            </tr>
+
+                                            <tr>
+
+                                                <td align="right" valign="bottom" width="150px">
+                                                    <label>City/State</label></td>
+                                                <td valign="bottom" width="300px" class="lineright">&nbsp;  
+                                                <asp:DropDownList ID="drp_city" runat="server" OnSelectedIndexChanged="drp_city_SelectedIndexChanged"
+                                                    AutoPostBack="True" Width="160px">
+                                                </asp:DropDownList>
+                                                  
+                                                </td>
+
+                                                <td align="right" valign="bottom" width="150px">
+                                                    <label>Venue</label></td>
+                                                <td width="350px" class="lineright" valign="bottom">&nbsp;
+                                                    <asp:DropDownList ID="drp_venue" runat="server" Width="160px" AutoPostBack="true"
+                                                    OnSelectedIndexChanged="drp_venue_SelectedIndexChanged">
+                                                </asp:DropDownList>
+                                                </td>
+
+                                                <td align="right" width="150px">
+                                                    <label>Subscription</label></td>
+                                                <td width="200px" valign="bottom">&nbsp;
+                                                    <asp:DropDownList ID="drp_subscription" EnableTheming="false" CssClass="my_select_box_small"
+                                                    runat="server" AutoPostBack="True" OnSelectedIndexChanged="drp_subscription_SelectedIndexChanged">
+                                                    <asp:ListItem Value="N">N</asp:ListItem>
+                                                    <asp:ListItem Value="Y">Y</asp:ListItem>
+                                                </asp:DropDownList>
+                                                    &nbsp;&nbsp;&nbsp;<asp:Label ID="lbl_subscription" runat="server" Text="" Visible="false"></asp:Label>&nbsp;&nbsp
+                                                      <asp:TextBox ID="txt_subscription" runat="server" CssClass="dollor17" Visible="False" Width="100px"></asp:TextBox>
+                                                </td>
+
+                                            </tr>
+
+                                            <tr>
+
+
+
+                                                <td align="right" valign="bottom" width="150px">
+                                                    <label>Settlement Date</label></td>
+                                                <td width="300px" class="lineright" valign="bottom">&nbsp; 
+                                                <asp:DropDownList ID="drp_createdate" runat="server" AutoPostBack="true" OnSelectedIndexChanged="drp_createdate_SelectedIndexChanged"
+                                                    Width="200px" DataTextFormatString="{0:MM/dd/yyyy}">
+                                                </asp:DropDownList>
+                                                    <div class="divdate">
+                                                        <asp:HiddenField ID="hdfdate" runat="server" />
+                                                    </div>
+                                                    <div style="display: none; float: left;">
+                                                        <asp:Button CausesValidation="false" ID="btnclickevent" runat="server" OnClick="cal_createdate_SelectionChanged" />
+                                                    </div>
+
+                                                   
+
+                                                </td>
+                                                <td width="150px"></td>
+                                                <td width="350px" class="lineright"></td>
+                                                <td align="right" valign="bottom" width="150px">
+                                                    <label>Repeat</label>
+                                                </td>
+                                                <td width="200px" valign="bottom">&nbsp;
+                                                    <asp:DropDownList ID="drp_repeat" runat="server" EnableTheming="false"
+                                                    CssClass="my_select_box_small">
+                                                    <asp:ListItem Value="N">N</asp:ListItem>
+                                                    <asp:ListItem Value="Y">Y</asp:ListItem>
+                                                </asp:DropDownList>
+                                                </td>
+
+                                            </tr>
+
+                                            <%--<tr>
+
+
+
+
+
+                                                                                                <td align="right">
+                                                    <label>Offer</label>
+                                                </td>
+                                                <td>&nbsp;<asp:DropDownList ID="drp_offer" runat="server" Width="160px">
+                                                </asp:DropDownList></td>
+                                            </tr>--%>
+                                        </table>
+
+                                    </asp:Panel>
+                                    <asp:Panel ID="pnlcontent" runat="server">
+                                      
+                                        <asp:ContentPlaceHolder ID="MainContent" runat="server" />
+                                    </asp:Panel>
+                                   
+                                </td>
+                            </tr>
+                            
+                            <asp:HiddenField ID="hdn_engagementid" runat="server" />
+                            <asp:HiddenField ID="hdn_showid" runat="server" />
+                            <asp:HiddenField ID="hdn_schedulecount" runat="server" />
+                            <asp:HiddenField ID="hdn_crdate" runat="server" />
+                        </table>
+
+                    </td>
+                </tr>
+
+
+
+
+
+
+            </table>
+
+            <script src="Scripts/autoNumeric 1.9.15.js" type="text/javascript"></script>
+            <script type="text/javascript">
+                jQuery(function ($) {
+                    $('.dollor17').autoNumeric({ aSign: '$', vMax: '999999999999999.99', vMin: '-999999999999999.99', nBracket: '(,)' });
+                    $('.decimal6').autoNumeric({ vMax: '9999.9999999999', vMin: '-9999.9999999999', nBracket: '(,)' });
+                    $('.decimal8').autoNumeric({ aSep: '', vMin: '0', vMax: '999999.99' });
+                    $('.decimal10').autoNumeric({ aSep: '', vMin: '0', vMax: '99999999.99' });
+                });
+                Sys.WebForms.PageRequestManager.getInstance().add_endRequest(EndRequestHandler);
+                function EndRequestHandler(sender, args) {
+                    $('.dollor17').autoNumeric({ aSign: '$', vMax: '999999999999999.99', vMin: '-999999999999999.99', nBracket: '(,)' });
+                    $('.decimal6').autoNumeric({ vMax: '9999.9999999999', vMin: '-9999.9999999999', nBracket: '(,)' });
+                    $('.decimal8').autoNumeric({ aSep: '', vMin: '0', vMax: '999999.99' });
+                    $('.decimal10').autoNumeric({ aSep: '', vMin: '0', vMax: '99999999.99' });
+                    //highlight();
+                };
+
+                window.onload = highlight;
+
+                function hlight(varid, i, control) {
+                    var ss1 = document.createElement('style');
+                    var def = '';
+                    var cid = '';
+                    if (control == 'ddl') {
+                        cid = varid + '_chosen a ';
+                    }
+                    else if (control == 'txt') {
+                        cid = varid;
+                    }
+
+                    if (parseInt(i) == 0) {
+                        def = '#' + cid + ' { border-bottom-color:#FF0000;}';
+                    } else {
+                        def = '#' + cid + ' { border-bottom-color:#aaa;}';
+                        // def = '#' + varid + '_chosen a {background-color: #fff;}';
+                    }
+                    ss1.setAttribute("type", "text/css");
+                    var hh1 = document.getElementsByTagName('head')[0];
+                    hh1.appendChild(ss1);
+                    if (ss1.styleSheet) {   // IE
+                        ss1.styleSheet.cssText = def;
+                    } else {                // the world
+                        var tt1 = document.createTextNode(def);
+                        ss1.appendChild(tt1);
+                    }
+                }
+
+                function highlight() {
+
+                    var reqlist = $('#hdnreqlist').val();
+                    if (reqlist.length > 0) {
+                        for (var i = 0; i < reqlist.split(',').length; i++) {
+                            var thisid = $('#' + reqlist.split(',')[i]);
+                            if (thisid[0] != undefined) {
+                                if (thisid[0].type == "select-one") {
+
+                                    // if (thisid[0].selectedIndex == 0) thisid[0].style.backgroundColor = '#FFD3A8'; else thisid[0].style.backgroundColor = '#ffffff';
+                                    if (thisid[0].id == "drp_createdate") {
+                                        if (thisid[0].value == "--Select--" || thisid[0].value == "0") {
+                                            if (thisid[0].selectedIndex == 0) hlight(thisid[0].id, 0, 'ddl'); else hlight(thisid[0].id, 1, 'ddl');
+                                            var keyup = (thisid[0].getAttribute("onchange") != null) ? thisid[0].getAttribute("onchange") + ";highlight();" : "highlight();";
+                                            if (thisid[0].hasAttributes("onchange") == false)
+                                                thisid[0].setAttribute("onchange", keyup);
+                                        }
+                                    } else {
+                                        if (thisid[0].selectedIndex == 0) hlight(thisid[0].id, 0, 'ddl'); else hlight(thisid[0].id, 1, 'ddl');
+                                        var keyup = (thisid[0].getAttribute("onchange") != null) ? thisid[0].getAttribute("onchange") + ";highlight();" : "highlight();";
+                                        if (thisid[0].hasAttributes("onchange") == false)
+                                            thisid[0].setAttribute("onchange", keyup);
+
+                                    }
+
+                                }
+                                if (thisid[0].type != "select-one") {
+
+                                    //if (thisid[0].value == '') thisid[0].style.backgroundColor = '#FFD3A8'; else thisid[0].style.backgroundColor = '#ffffff';
+                                    if (thisid[0].value == '') hlight(thisid[0].id, 0, 'txt'); else hlight(thisid[0].id, 1, 'txt');
+                                    var keyup = (thisid[0].getAttribute("onkeyup") != null && thisid[0].getAttribute("onkeyup").search("highlight()") == -1) ? thisid[0].getAttribute("onkeyup") + "highlight();" : "highlight();";
+                                    thisid[0].setAttribute("onkeyup", keyup);
+                                }
+                            }
+
+                        }
+                    }
+
+                }
+
+            </script>
+
+            <script src="../Scripts/chosen.jquery.js" type="text/javascript"></script>
+            <script type="text/javascript">
+                $(document).ready(function () { ddlchosen(); })
+
+                Sys.WebForms.PageRequestManager.getInstance().add_endRequest(EndRequestHandler);
+                function EndRequestHandler(sender, args) {
+                    ddlchosen();
+                }
+                function ddlchosen() {
+                    $(".my_select_box").chosen({
+                        search_contains: true,
+                        disable_search_threshold: 1,
+                        no_results_text: "Nothing found!"
+                    });
+                    $(".my_select_box_small").chosen({
+                        search_contains: true,
+                        disable_search_threshold: 1,
+                        no_results_text: "Nothing found!",
+                        width: "50px"
+                    });
+                }
+            </script>
+            <div>
+                <table width="1860px" border="0" align="center" cellpadding="0" cellspacing="0">
+                    <tr valign="bottom">
+                        <td height="18px" style="background-repeat: repeat-x; height: 18px; text-align: center; font-size: 11px; padding: 0 0 2px 0;">
+                            <div style="width: 100%">&nbsp; Copyright &copy; <%: DateTime.Now.Year %>, NETworks Presentations, Inc.</div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </form>
+    <%--(the below div(divacewidth) for ajax auto complete extender refered from all new screens)--%>
+    <div id="divacewidth">
+    </div>
+</body>
+</html>
+

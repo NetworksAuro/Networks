@@ -1,0 +1,1 @@
+This folder used for generating excel file reports. Previous days files will be cleaned by a schuduler on daily basis
